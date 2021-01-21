@@ -1,5 +1,6 @@
 package org.embulk.base.restclient.jackson.scope;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
+import org.embulk.spi.DataException;
 import org.embulk.spi.time.TimestampFormatter;
 
 import org.embulk.base.restclient.jackson.StringJsonParser;
@@ -112,8 +114,16 @@ public class JacksonAllInObjectScope
                     // TODO(dmikurube): Use jackson-datatype-msgpack.
                     // See: https://github.com/embulk/embulk-base-restclient/issues/32
                     if (!singlePageRecordReader.isNull(column)) {
-                        resultObject.set(column.getName(),
-                                jsonParser.parseJsonObject(singlePageRecordReader.getJson(column).toJson()));
+                        String jsonText = singlePageRecordReader.getJson(column).toJson();
+                        JsonNode node = jsonParser.parseJsonNode(jsonText);
+
+                        if (node.isObject()) {
+                            resultObject.set(column.getName(), jsonParser.parseJsonObject(jsonText));
+                        } else if (node.isArray()) {
+                            resultObject.set(column.getName(), jsonParser.parseJsonArray(jsonText));
+                        } else {
+                            throw new DataException("Unexpected node: " + jsonText);
+                        }
                     } else {
                         resultObject.putNull(column.getName());
                     }
