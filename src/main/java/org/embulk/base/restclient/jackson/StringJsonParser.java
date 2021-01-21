@@ -43,7 +43,7 @@ public class StringJsonParser
         }
     }
 
-    private JsonNode parseJsonNode(String jsonText)
+    public JsonNode parseJsonNode(String jsonText)
     {
         try {
             return mapper.readTree(jsonText);
