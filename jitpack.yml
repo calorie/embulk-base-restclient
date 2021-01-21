@@ -1,2 +1,4 @@
 jdk:
   - openjdk7
+install:
+  - ./gradlew clean install -xtest -PignoreJavaVersion
