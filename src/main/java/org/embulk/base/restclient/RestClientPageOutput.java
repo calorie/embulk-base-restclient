@@ -43,6 +43,7 @@ public class RestClientPageOutput<T extends RestClientOutputTaskBase>
             ServiceRecord record = recordExporter.exportRecord(singlePageRecordReader);
             this.recordBuffer.bufferRecord(record);
         }
+        page.release();
     }
 
     @Override
